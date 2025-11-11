@@ -17,39 +17,42 @@
       color: #333;
       text-align: center;
     }
+    #logo {
+      width: 180px;
+      margin-bottom: 15px;
+    }
     h1 {
       margin-bottom: 10px;
     }
     p {
       margin: 0 20px 20px 20px;
-      max-width: 420px;
+      max-width: 400px;
     }
     button {
       background-color: #ffd200;
       color: #000;
       border: none;
-      padding: 12px 22px;
+      padding: 14px 26px;
       font-size: 16px;
       border-radius: 10px;
       cursor: pointer;
-      margin-top: 14px;
+      margin-top: 20px;
       transition: background-color 0.2s ease;
     }
     button:hover { background-color: #ffdf3a; }
     #coords {
       margin-top: 20px;
       font-size: 18px;
-      max-width: 420px;
+      max-width: 400px;
       word-wrap: break-word;
     }
-    .small-note {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #555;
+    a button {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
+  <img id="logo" src="FP%20logo.png" alt="Fawry Plus Logo" />
   <h1 id="title">Fawry Plus Branch Locator</h1>
   <p id="description">
     Click below to share your current location and open the assistant.
@@ -67,45 +70,39 @@
     const text = {
       en: {
         title: "Fawry Plus Branch Locator",
-        description: "Click the button below to share your current location, then copy the coordinates and paste them into the assistant.",
-        mainButton: "Get My Location",
+        description: "Click below to share your current location and open the assistant.",
+        mainButton: "Find My Nearest Branch",
         gettingLocation: "Getting your location…",
         geoNotSupported: "Geolocation is not supported by your browser.",
         locationLabel: "Your location",
-        copyButton: "Copy Coordinates",
-        copySuccess: "Coordinates copied. Now open the Fawry Plus Assistant and paste them.",
-        gptButton: "Open Fawry Plus Assistant",
+        openAssistant: "Open Fawry Plus Assistant",
         error: "Unable to retrieve your location. Please allow location access."
       },
       ar: {
         title: "محدد فروع فوري بلس",
-        description: "اضغط على الزر بالأسفل لمشاركة موقعك الحالي، ثم انسخ الإحداثيات والصقها في المساعد.",
-        mainButton: "احصل على موقعي",
+        description: "اضغط على الزر بالأسفل لمشاركة موقعك الحالي وفتح المساعد.",
+        mainButton: "اعرف أقرب فرع من موقعي",
         gettingLocation: "جاري الحصول على موقعك…",
         geoNotSupported: "المتصفح لا يدعم تحديد الموقع الجغرافي.",
         locationLabel: "موقعك الحالي",
-        copyButton: "نسخ الإحداثيات",
-        copySuccess: "تم نسخ الإحداثيات. افتح مساعد فوري بلس والصقها هناك.",
-        gptButton: "افتح مساعد فوري بلس",
+        openAssistant: "افتح مساعد فوري بلس",
         error: "تعذّر الحصول على موقعك. من فضلك اسمح بالوصول للموقع."
       }
     };
 
     const t = isArabic ? text.ar : text.en;
 
-    // Apply language & direction
+    // Set page language & direction
     document.documentElement.lang = isArabic ? "ar" : "en";
     document.documentElement.dir = isArabic ? "rtl" : "ltr";
 
-    // Apply UI text
+    // Apply text to UI
     document.getElementById("title").textContent = t.title;
     document.getElementById("description").textContent = t.description;
     document.getElementById("mainButton").textContent = t.mainButton;
 
-    // ===== Geolocation Logic =====
-    const gptUrl = "https://chatgpt.com/g/g-690c9045a57481918f9df151b3bf1f1e-fawry-plus";
-
-    let lastCoordsText = "";
+    // ===== Geolocation & GPT Redirection =====
+    const gptBaseUrl = "https://chatgpt.com/g/g-690c9045a57481918f9df151b3bf1f1e-fawry-plus";
 
     function getLocation() {
       const coordsDiv = document.getElementById("coords");
@@ -123,36 +120,23 @@
       const coordsDiv = document.getElementById("coords");
       const latitude = position.coords.latitude.toFixed(6);
       const longitude = position.coords.longitude.toFixed(6);
-      lastCoordsText = `${latitude}, ${longitude}`;
+      const messageText = `${latitude}, ${longitude}`;
+      const encodedMessage = encodeURIComponent(messageText);
+      const gptUrl = `${gptBaseUrl}?message=${encodedMessage}`;
 
       const label = t.locationLabel;
-      const copyButton = t.copyButton;
-      const gptButton = t.gptButton;
+      const buttonLabel = t.openAssistant;
 
       coordsDiv.innerHTML =
         `${label}: <strong>${latitude}, ${longitude}</strong><br/><br/>` +
-        `<button onclick="copyCoords()">${copyButton}</button><br/>` +
-        `<button onclick="openGPT()">${gptButton}</button>` +
-        `<div class="small-note">${isArabic ? "بعد فتح المساعد، الصق الإحداثيات في أول رسالة." : "After opening the assistant, paste the coordinates into your first message."}</div>`;
+        `<a href="${gptUrl}" target="_blank" rel="noopener noreferrer">
+           <button>${buttonLabel}</button>
+         </a>`;
     }
 
     function error() {
       const coordsDiv = document.getElementById("coords");
       coordsDiv.textContent = t.error;
-    }
-
-    async function copyCoords() {
-      if (!lastCoordsText) return;
-      try {
-        await navigator.clipboard.writeText(lastCoordsText);
-        alert(t.copySuccess);
-      } catch (e) {
-        alert(isArabic ? "تعذّر نسخ الإحداثيات، انسخها يدويًا." : "Could not copy the coordinates automatically. Please copy them manually.");
-      }
-    }
-
-    function openGPT() {
-      window.open(gptUrl, "_blank", "noopener,noreferrer");
     }
   </script>
 </body>

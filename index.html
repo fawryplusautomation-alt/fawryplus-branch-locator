@@ -61,9 +61,9 @@
   <img id="logo" src="FP%20Logo.png" alt="Fawry Plus Logo" />
   <h1 id="title">Fawry Plus Branch Locator</h1>
   <p id="description">
-    Click below to share your current location and open the assistant.
+    Click below to detect your current coordinates and then return to the assistant.
   </p>
-  <button id="mainButton" onclick="getLocation()">Find My Nearest Branch</button>
+  <button id="mainButton" onclick="getLocation()">Find My Coordinates</button>
   <div id="coords"></div>
   <div id="copiedMsg" class="copied">✅ Copied!</div>
 
@@ -74,8 +74,8 @@
     const text = {
       en: {
         title: "Fawry Plus Branch Locator",
-        description: "Click below to share your current location and open the assistant.",
-        mainButton: "Find My Nearest Branch",
+        description: "Click below to detect your current coordinates and then return to the assistant.",
+        mainButton: "Find My Coordinates",
         gettingLocation: "Getting your location…",
         geoNotSupported: "Geolocation is not supported by your browser.",
         locationLabel: "Your location",
@@ -86,8 +86,8 @@
       },
       ar: {
         title: "محدد فروع فوري بلس",
-        description: "اضغط على الزر بالأسفل لمشاركة موقعك الحالي وفتح المساعد.",
-        mainButton: "اعرف أقرب فرع من موقعي",
+        description: "اضغط على الزر بالأسفل للحصول على إحداثيات موقعك ثم العودة لمساعد فوري بلس.",
+        mainButton: "احصل على إحداثياتي",
         gettingLocation: "جاري الحصول على موقعك…",
         geoNotSupported: "المتصفح لا يدعم تحديد الموقع الجغرافي.",
         locationLabel: "موقعك الحالي",
@@ -100,8 +100,59 @@
 
     const t = isArabic ? text.ar : text.en;
 
+    // Apply language & direction
     document.documentElement.lang = isArabic ? "ar" : "en";
     document.documentElement.dir = isArabic ? "rtl" : "ltr";
     document.getElementById("title").textContent = t.title;
     document.getElementById("description").textContent = t.description;
-    document.getElementById("mainB
+    document.getElementById("mainButton").textContent = t.mainButton;
+
+    // Your GPT link
+    const gptBaseUrl = "https://chatgpt.com/g/g-690c9045a57481918f9df151b3bf1f1e-fawry-plus";
+
+    function getLocation() {
+      const coordsDiv = document.getElementById("coords");
+      const copiedMsg = document.getElementById("copiedMsg");
+
+      if (!navigator.geolocation) {
+        coordsDiv.textContent = t.geoNotSupported;
+        return;
+      }
+
+      copiedMsg.style.display = "none";
+      coordsDiv.textContent = t.gettingLocation;
+      navigator.geolocation.getCurrentPosition(success, error);
+    }
+
+    function success(position) {
+      const coordsDiv = document.getElementById("coords");
+      const copiedMsg = document.getElementById("copiedMsg");
+      const latitude = position.coords.latitude.toFixed(6);
+      const longitude = position.coords.longitude.toFixed(6);
+      const messageText = `${latitude}, ${longitude}`;
+      const encodedMessage = encodeURIComponent(messageText);
+      const gptUrl = `${gptBaseUrl}?message=${encodedMessage}`;
+
+      coordsDiv.innerHTML =
+        `${t.locationLabel}: <strong>${latitude}, ${longitude}</strong><br/><br/>` +
+        `<button class="small-btn" onclick="copyCoords('${messageText}')">${t.copy}</button><br/><br/>` +
+        `<a href="${gptUrl}" target="_blank" rel="noopener noreferrer">
+           <button>${t.openAssistant}</button>
+         </a>`;
+    }
+
+    function copyCoords(textToCopy) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const msg = document.getElementById("copiedMsg");
+        msg.textContent = isArabic ? text.ar.copied : text.en.copied;
+        msg.style.display = "block";
+        setTimeout(() => { msg.style.display = "none"; }, 2000);
+      });
+    }
+
+    function error() {
+      document.getElementById("coords").textContent = t.error;
+    }
+  </script>
+</body>
+</html>

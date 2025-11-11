@@ -21,9 +21,7 @@
       width: 180px;
       margin-bottom: 15px;
     }
-    h1 {
-      margin-bottom: 10px;
-    }
+    h1 { margin-bottom: 10px; }
     p {
       margin: 0 20px 20px 20px;
       max-width: 400px;
@@ -36,7 +34,7 @@
       font-size: 16px;
       border-radius: 10px;
       cursor: pointer;
-      margin-top: 20px;
+      margin-top: 15px;
       transition: background-color 0.2s ease;
     }
     button:hover { background-color: #ffdf3a; }
@@ -46,8 +44,16 @@
       max-width: 400px;
       word-wrap: break-word;
     }
-    a button {
-      margin-top: 10px;
+    .small-btn {
+      padding: 10px 18px;
+      font-size: 14px;
+    }
+    .copied {
+      color: green;
+      font-weight: bold;
+      font-size: 14px;
+      margin-top: 8px;
+      display: none;
     }
   </style>
 </head>
@@ -57,13 +63,11 @@
   <p id="description">
     Click below to share your current location and open the assistant.
   </p>
-  <button id="mainButton" onclick="getLocation()">
-    Find My Nearest Branch
-  </button>
+  <button id="mainButton" onclick="getLocation()">Find My Nearest Branch</button>
   <div id="coords"></div>
+  <div id="copiedMsg" class="copied">✅ Copied!</div>
 
   <script>
-    // ===== Language & Text Setup =====
     const userLang = (navigator.language || navigator.userLanguage || "en").toLowerCase();
     const isArabic = userLang.startsWith("ar");
 
@@ -75,7 +79,9 @@
         gettingLocation: "Getting your location…",
         geoNotSupported: "Geolocation is not supported by your browser.",
         locationLabel: "Your location",
-        openAssistant: "Open Fawry Plus Assistant",
+        openAssistant: "Return to Fawry Plus GPT",
+        copy: "Copy Coordinates",
+        copied: "Copied!",
         error: "Unable to retrieve your location. Please allow location access."
       },
       ar: {
@@ -85,60 +91,17 @@
         gettingLocation: "جاري الحصول على موقعك…",
         geoNotSupported: "المتصفح لا يدعم تحديد الموقع الجغرافي.",
         locationLabel: "موقعك الحالي",
-        openAssistant: "افتح مساعد فوري بلس",
+        openAssistant: "العودة لمساعد فوري بلس",
+        copy: "نسخ الإحداثيات",
+        copied: "تم النسخ!",
         error: "تعذّر الحصول على موقعك. من فضلك اسمح بالوصول للموقع."
       }
     };
 
     const t = isArabic ? text.ar : text.en;
 
-    // Set page language & direction
     document.documentElement.lang = isArabic ? "ar" : "en";
     document.documentElement.dir = isArabic ? "rtl" : "ltr";
-
-    // Apply text to UI
     document.getElementById("title").textContent = t.title;
     document.getElementById("description").textContent = t.description;
-    document.getElementById("mainButton").textContent = t.mainButton;
-
-    // ===== Geolocation & GPT Redirection =====
-    const gptBaseUrl = "https://chatgpt.com/g/g-690c9045a57481918f9df151b3bf1f1e-fawry-plus";
-
-    function getLocation() {
-      const coordsDiv = document.getElementById("coords");
-
-      if (!navigator.geolocation) {
-        coordsDiv.textContent = t.geoNotSupported;
-        return;
-      }
-
-      coordsDiv.textContent = t.gettingLocation;
-      navigator.geolocation.getCurrentPosition(success, error);
-    }
-
-    function success(position) {
-      const coordsDiv = document.getElementById("coords");
-      const latitude = position.coords.latitude.toFixed(6);
-      const longitude = position.coords.longitude.toFixed(6);
-      const messageText = `${latitude}, ${longitude}`;
-      const encodedMessage = encodeURIComponent(messageText);
-      const gptUrl = `${gptBaseUrl}?message=${encodedMessage}`;
-
-      const label = t.locationLabel;
-      const buttonLabel = t.openAssistant;
-
-      coordsDiv.innerHTML =
-        `${label}: <strong>${latitude}, ${longitude}</strong><br/><br/>` +
-        `<a href="${gptUrl}" target="_blank" rel="noopener noreferrer">
-           <button>${buttonLabel}</button>
-         </a>`;
-    }
-
-    function error() {
-      const coordsDiv = document.getElementById("coords");
-      coordsDiv.textContent = t.error;
-    }
-  </script>
-</body>
-</html>
-
+    document.getElementById("mainB
